@@ -4,6 +4,8 @@
 
 let allMatches = [];
 let currentFilter = 'all';
+let currentSlide = 0;
+let carouselInterval = null;
 
 // ========================================
 // 页面加载
@@ -12,6 +14,7 @@ let currentFilter = 'all';
 window.addEventListener('load', () => {
     loadMatches();
     setupEventListeners();
+    initCarousel();
 });
 
 function setupEventListeners() {
@@ -52,7 +55,7 @@ function setupEventListeners() {
 
 async function loadMatches() {
     const matchList = document.getElementById('matchList');
-    matchList.innerHTML = '<div class="loading">加载比赛数据中...</div>';
+    matchList.innerHTML = '<div class="loading">Loading match data...</div>';
     
     try {
         const response = await fetch(
@@ -68,19 +71,19 @@ async function loadMatches() {
         const result = await response.json();
         
         if (result.success && result.data) {
-            // 修复数据格式：将字符串转换为对象/数组
+            // Fix data format: convert strings to objects/arrays
             allMatches = result.data.map(match => {
                 try {
-                    // 解析 result 字段（如果是字符串）
+                    // Parse result field (if string)
                     if (typeof match.result === 'string') {
                         match.result = JSON.parse(match.result);
                     }
-                    // 解析 tags 字段（如果是字符串）
+                    // Parse tags field (if string)
                     if (typeof match.tags === 'string') {
                         match.tags = JSON.parse(match.tags);
                     }
                 } catch (e) {
-                    console.warn('解析数据失败:', e, match);
+                    console.warn('Parse data failed:', e, match);
                 }
                 return match;
             });
@@ -88,11 +91,11 @@ async function loadMatches() {
             renderMatches(allMatches);
             updateStats(allMatches);
         } else {
-            matchList.innerHTML = '<div class="loading">暂无比赛数据</div>';
+            matchList.innerHTML = '<div class="loading">No match data</div>';
         }
     } catch (error) {
-        console.error('加载比赛失败:', error);
-        matchList.innerHTML = `<div class="loading">加载失败: ${error.message}<br><small>请检查API端点配置</small></div>`;
+        console.error('Load matches failed:', error);
+        matchList.innerHTML = `<div class="loading">Load failed: ${error.message}<br><small>Please check API endpoint configuration</small></div>`;
     }
 }
 
@@ -104,7 +107,7 @@ function renderMatches(matches) {
     const matchList = document.getElementById('matchList');
     
     if (!matches || matches.length === 0) {
-        matchList.innerHTML = '<div class="loading">暂无比赛记录<br><button class="btn btn-primary" onclick="showUploadModal()">上传第一场比赛</button></div>';
+        matchList.innerHTML = '<div class="loading">No match records<br><button class="btn btn-primary" onclick="showUploadModal()">Upload First Match</button></div>';
         return;
     }
     
@@ -192,11 +195,9 @@ function updateStats(matches) {
     const total = matches.length;
     const wins = matches.filter(m => m.result?.outcome === 'win').length;
     const winRate = total > 0 ? ((wins / total) * 100).toFixed(1) : 0;
-    const totalSize = matches.reduce((sum, m) => sum + (m.videoSize || 0), 0);
     
     document.getElementById('totalMatches').textContent = total;
     document.getElementById('winRate').textContent = `${winRate}%`;
-    document.getElementById('totalStorage').textContent = `${(totalSize / 1024 / 1024 / 1024).toFixed(2)} GB`;
 }
 
 // ========================================
@@ -513,6 +514,121 @@ window.onclick = function(event) {
     const modal = document.getElementById('uploadModal');
     if (event.target === modal) {
         closeUploadModal();
+    }
+}
+
+// ========================================
+// 轮播图功能
+// ========================================
+
+function initCarousel() {
+    const slides = document.querySelectorAll('.carousel-slide');
+    const dotsContainer = document.getElementById('carouselDots');
+    
+    // 创建指示点
+    slides.forEach((_, index) => {
+        const dot = document.createElement('div');
+        dot.className = `carousel-dot ${index === 0 ? 'active' : ''}`;
+        dot.onclick = () => goToSlide(index);
+        dotsContainer.appendChild(dot);
+    });
+    
+    // 自动播放
+    startAutoPlay();
+}
+
+function goToSlide(n) {
+    const slides = document.querySelectorAll('.carousel-slide');
+    const dots = document.querySelectorAll('.carousel-dot');
+    
+    if (n >= slides.length) {
+        currentSlide = 0;
+    } else if (n < 0) {
+        currentSlide = slides.length - 1;
+    } else {
+        currentSlide = n;
+    }
+    
+    // 更新幻灯片
+    slides.forEach((slide, index) => {
+        slide.classList.remove('active');
+        if (index === currentSlide) {
+            slide.classList.add('active');
+        }
+    });
+    
+    // 更新指示点
+    dots.forEach((dot, index) => {
+        dot.classList.remove('active');
+        if (index === currentSlide) {
+            dot.classList.add('active');
+        }
+    });
+}
+
+function nextSlide() {
+    goToSlide(currentSlide + 1);
+    resetAutoPlay();
+}
+
+function prevSlide() {
+    goToSlide(currentSlide - 1);
+    resetAutoPlay();
+}
+
+function startAutoPlay() {
+    carouselInterval = setInterval(() => {
+        goToSlide(currentSlide + 1);
+    }, 5000); // 每5秒切换
+}
+
+function resetAutoPlay() {
+    clearInterval(carouselInterval);
+    startAutoPlay();
+}
+
+// 暂停/恢复轮播
+const carouselContainer = document.querySelector('.carousel-container');
+if (carouselContainer) {
+    carouselContainer.addEventListener('mouseenter', () => {
+        clearInterval(carouselInterval);
+    });
+    
+    carouselContainer.addEventListener('mouseleave', () => {
+        startAutoPlay();
+    });
+}
+
+// 键盘控制
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowLeft') {
+        prevSlide();
+    } else if (e.key === 'ArrowRight') {
+        nextSlide();
+    }
+});
+
+// 触摸滑动支持
+let touchStartX = 0;
+let touchEndX = 0;
+
+if (carouselContainer) {
+    carouselContainer.addEventListener('touchstart', (e) => {
+        touchStartX = e.changedTouches[0].screenX;
+    });
+    
+    carouselContainer.addEventListener('touchend', (e) => {
+        touchEndX = e.changedTouches[0].screenX;
+        handleSwipe();
+    });
+}
+
+function handleSwipe() {
+    if (touchEndX < touchStartX - 50) {
+        nextSlide();
+    }
+    if (touchEndX > touchStartX + 50) {
+        prevSlide();
     }
 }
 

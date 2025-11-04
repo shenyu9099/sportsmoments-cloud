@@ -1,5 +1,5 @@
 // ========================================
-// 赛场瞬间 - 比赛详情页脚本
+// Sports Moments - Match Detail Page Script
 // ========================================
 
 let currentMatch = null;
@@ -7,7 +7,7 @@ let currentVideo = null;
 let annotations = [];
 let comments = [];
 
-// 战术图绘制工具
+// Tactical Drawing Tools
 let canvas, ctx;
 let isDrawing = false;
 let currentTool = 'arrow';
@@ -15,7 +15,7 @@ let drawingHistory = [];
 let currentColor = '#ff0000';
 
 // ========================================
-// 页面加载
+// Page Load
 // ========================================
 
 window.addEventListener('load', () => {
@@ -25,7 +25,7 @@ window.addEventListener('load', () => {
         loadAnnotations(matchId);
         loadComments(matchId);
     } else {
-        alert('未找到比赛ID');
+        alert('Match ID not found');
         window.location.href = 'index.html';
     }
     
@@ -39,7 +39,7 @@ function getMatchIdFromUrl() {
 }
 
 // ========================================
-// 加载比赛详情
+// Load Match Detail
 // ========================================
 
 async function loadMatchDetail(matchId) {
@@ -57,7 +57,7 @@ async function loadMatchDetail(matchId) {
         const result = await response.json();
         
         if (result.success && result.data) {
-            // 修复数据格式：将字符串转换为对象/数组
+            // Fix data format: convert strings to objects/arrays
             currentMatch = result.data;
             try {
                 if (typeof currentMatch.result === 'string') {
@@ -67,36 +67,41 @@ async function loadMatchDetail(matchId) {
                     currentMatch.tags = JSON.parse(currentMatch.tags);
                 }
             } catch (e) {
-                console.warn('解析数据失败:', e);
+                console.warn('Parse data failed:', e);
             }
             
             renderMatchDetail(currentMatch);
         } else {
-            throw new Error('加载比赛详情失败');
+            throw new Error('Failed to load match detail');
         }
     } catch (error) {
-        console.error('加载失败:', error);
-        alert('加载比赛详情失败: ' + error.message);
+        console.error('Load failed:', error);
+        alert('Failed to load match detail: ' + error.message);
     }
 }
 
 function renderMatchDetail(match) {
-    // 标题和信息
-    document.getElementById('matchTitle').textContent = match.matchTitle;
-    document.getElementById('matchDate').textContent = `📅 ${formatDate(match.matchDate)}`;
-    document.getElementById('matchLocation').textContent = `📍 ${match.location || '未知'}`;
+    // Update page title
+    document.title = `${match.matchTitle} - Match Detail - Sports Moments`;
     
-    // 结果徽章
+    // Match title
+    document.getElementById('matchTitle').textContent = match.matchTitle;
+    
+    // Match info
+    document.getElementById('matchDate').textContent = `📅 ${formatDate(match.matchDate)}`;
+    document.getElementById('matchLocation').textContent = `📍 ${match.location || 'Unknown'}`;
+    
+    // Result badge
     const resultBadge = document.getElementById('matchResult');
     const outcome = match.result?.outcome;
     const badgeClass = outcome === 'win' ? 'badge-win' : 
                        outcome === 'loss' ? 'badge-loss' : 'badge-draw';
-    const resultText = outcome === 'win' ? '胜利 🏆' : 
-                      outcome === 'loss' ? '失利 😔' : '平局 🤝';
+    const resultText = outcome === 'win' ? 'Win 🏆' : 
+                      outcome === 'loss' ? 'Loss 😔' : 'Draw 🤝';
     resultBadge.className = `badge ${badgeClass}`;
     resultBadge.textContent = `${resultText} ${match.result?.ourScore || 0}:${match.result?.opponentScore || 0}`;
     
-    // 标签
+    // Tags
     const tagsContainer = document.getElementById('matchTags');
     if (match.tags && match.tags.length > 0) {
         tagsContainer.innerHTML = match.tags.map(tag => 
@@ -104,14 +109,14 @@ function renderMatchDetail(match) {
         ).join('');
     }
     
-    // 视频
+    // Video
     if (match.videoUrl) {
         document.getElementById('videoSource').src = match.videoUrl;
         currentVideo = document.getElementById('matchVideo');
         currentVideo.load();
     }
     
-    // 权限检查：只有上传者才能看到编辑/删除按钮
+    // Permission check：只有上传者才能看到编辑/删除按钮
     const actionsSection = document.querySelector('.match-actions');
     if (actionsSection) {
         if (canEdit(match.uploadedBy)) {
@@ -121,7 +126,7 @@ function renderMatchDetail(match) {
         }
     }
     
-    // 权限检查：只有上传者才能添加战术标注
+    // Permission check：只有上传者才能添加战术标注
     const addAnnotationBtn = document.querySelector('.annotations-section .btn-primary');
     if (addAnnotationBtn) {
         if (canEdit(match.uploadedBy)) {

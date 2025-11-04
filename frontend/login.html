@@ -1,117 +1,245 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>登录 - 赛场瞬间</title>
+    <title>Login - Sports Moments</title>
     <link rel="stylesheet" href="styles.css">
     <style>
         .login-container {
-            max-width: 400px;
-            margin: 100px auto;
-            padding: 40px;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            max-width: 480px;
+            margin: 80px auto;
+            padding: 48px;
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            box-shadow: 0 24px 60px rgba(0, 0, 0, 0.2), 0 0 80px rgba(102, 126, 234, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            position: relative;
+            z-index: 1;
+            animation: containerFadeIn 0.8s ease-out;
+        }
+        
+        @keyframes containerFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(40px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
         }
         
         .login-header {
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 36px;
         }
         
         .login-header h1 {
-            color: var(--primary-color);
-            margin-bottom: 10px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 12px;
+            font-size: 2.2em;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            animation: titleGlow 3s ease-in-out infinite;
+        }
+        
+        @keyframes titleGlow {
+            0%, 100% { filter: drop-shadow(0 0 8px rgba(102, 126, 234, 0.3)); }
+            50% { filter: drop-shadow(0 0 16px rgba(102, 126, 234, 0.5)); }
+        }
+        
+        .login-header p {
+            color: var(--text-secondary);
+            font-size: 1.05em;
+            font-weight: 500;
         }
         
         .login-tabs {
             display: flex;
-            margin-bottom: 30px;
-            border-bottom: 2px solid #f0f0f0;
+            margin-bottom: 36px;
+            border-bottom: 2px solid var(--border-color);
+            position: relative;
+        }
+        
+        .login-tabs::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 50%;
+            height: 2px;
+            background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 2px;
+        }
+        
+        .login-tabs:has(.tab-btn:last-child.active)::after {
+            transform: translateX(100%);
         }
         
         .tab-btn {
             flex: 1;
-            padding: 12px;
+            padding: 16px;
             background: none;
             border: none;
             cursor: pointer;
-            font-size: 16px;
-            color: #666;
-            transition: all 0.3s;
+            font-size: 17px;
+            color: var(--text-secondary);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             border-bottom: 3px solid transparent;
+            font-weight: 600;
+            position: relative;
         }
         
         .tab-btn.active {
             color: var(--primary-color);
-            border-bottom-color: var(--primary-color);
-            font-weight: bold;
+            font-weight: 700;
+        }
+        
+        .tab-btn:hover {
+            color: var(--primary-color);
         }
         
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 24px;
         }
         
         .form-group label {
             display: block;
-            margin-bottom: 8px;
-            color: #333;
-            font-weight: 500;
+            margin-bottom: 10px;
+            color: var(--text-primary);
+            font-weight: 600;
+            font-size: 14px;
+            letter-spacing: 0.3px;
         }
         
         .form-group input {
             width: 100%;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            font-size: 14px;
-            transition: border-color 0.3s;
+            padding: 14px 16px;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            font-size: 15px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            background: var(--bg-light);
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
         }
         
         .form-group input:focus {
             outline: none;
             border-color: var(--primary-color);
+            background: white;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1), inset 0 1px 3px rgba(0, 0, 0, 0.05);
+            transform: translateY(-1px);
+        }
+        
+        .form-group input::placeholder {
+            color: var(--text-light);
         }
         
         .submit-btn {
             width: 100%;
-            padding: 14px;
-            background: var(--primary-color);
+            padding: 16px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color), var(--accent-color));
+            background-size: 200% 200%;
             color: white;
             border: none;
-            border-radius: 6px;
-            font-size: 16px;
-            font-weight: bold;
+            border-radius: 12px;
+            font-size: 17px;
+            font-weight: 700;
             cursor: pointer;
-            transition: background 0.3s;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+            animation: gradientShift 3s ease infinite;
+            position: relative;
+            overflow: hidden;
+            letter-spacing: 0.5px;
+        }
+        
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+        
+        .submit-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+        
+        .submit-btn:hover::before {
+            width: 300px;
+            height: 300px;
         }
         
         .submit-btn:hover {
-            background: var(--primary-dark);
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5), 0 0 20px rgba(102, 126, 234, 0.3);
+        }
+        
+        .submit-btn:active {
+            transform: translateY(-1px) scale(0.98);
         }
         
         .submit-btn:disabled {
-            background: #ccc;
+            background: var(--border-color);
             cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+            animation: none;
         }
         
         .error-message {
-            color: var(--error-color);
+            color: var(--danger-color);
             font-size: 14px;
-            margin-top: 10px;
+            margin-top: 12px;
             text-align: center;
+            font-weight: 600;
+            padding: 12px;
+            background: rgba(239, 68, 68, 0.1);
+            border-radius: 8px;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            animation: shake 0.4s;
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-8px); }
+            75% { transform: translateX(8px); }
         }
         
         .success-message {
             color: var(--success-color);
             font-size: 14px;
-            margin-top: 10px;
+            margin-top: 12px;
             text-align: center;
+            font-weight: 600;
+            padding: 12px;
+            background: rgba(16, 185, 129, 0.1);
+            border-radius: 8px;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            animation: fadeIn 0.4s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         
         .form-container {
             display: none;
+            animation: fadeIn 0.4s;
         }
         
         .form-container.active {
@@ -122,57 +250,57 @@
 <body>
     <div class="login-container">
         <div class="login-header">
-            <h1>🏀 赛场瞬间</h1>
-            <p>体育赛事视频管理平台</p>
+            <h1>🏀 Sports Moments</h1>
+            <p>Sports Video Management Platform</p>
         </div>
         
         <div class="login-tabs">
-            <button class="tab-btn active" onclick="switchTab('login')">登录</button>
-            <button class="tab-btn" onclick="switchTab('register')">注册</button>
+            <button class="tab-btn active" onclick="switchTab('login')">Login</button>
+            <button class="tab-btn" onclick="switchTab('register')">Register</button>
         </div>
         
-        <!-- 登录表单 -->
+        <!-- Login Form -->
         <div id="loginForm" class="form-container active">
             <form onsubmit="handleLogin(event)">
                 <div class="form-group">
-                    <label>用户名</label>
-                    <input type="text" id="loginUsername" required placeholder="请输入用户名">
+                    <label>Username</label>
+                    <input type="text" id="loginUsername" required placeholder="Enter username">
                 </div>
                 
                 <div class="form-group">
-                    <label>密码</label>
-                    <input type="password" id="loginPassword" required placeholder="请输入密码">
+                    <label>Password</label>
+                    <input type="password" id="loginPassword" required placeholder="Enter password">
                 </div>
                 
-                <button type="submit" class="submit-btn" id="loginBtn">登录</button>
+                <button type="submit" class="submit-btn" id="loginBtn">Login</button>
                 <div id="loginMessage"></div>
             </form>
         </div>
         
-        <!-- 注册表单 -->
+        <!-- Register Form -->
         <div id="registerForm" class="form-container">
             <form onsubmit="handleRegister(event)">
                 <div class="form-group">
-                    <label>用户名</label>
-                    <input type="text" id="registerUsername" required placeholder="3-20个字符">
+                    <label>Username</label>
+                    <input type="text" id="registerUsername" required placeholder="3-20 characters">
                 </div>
                 
                 <div class="form-group">
-                    <label>显示名称</label>
-                    <input type="text" id="registerDisplayName" required placeholder="例如：张教练">
+                    <label>Display Name</label>
+                    <input type="text" id="registerDisplayName" required placeholder="e.g., Coach Zhang">
                 </div>
                 
                 <div class="form-group">
-                    <label>密码</label>
-                    <input type="password" id="registerPassword" required placeholder="至少6个字符">
+                    <label>Password</label>
+                    <input type="password" id="registerPassword" required placeholder="At least 6 characters">
                 </div>
                 
                 <div class="form-group">
-                    <label>确认密码</label>
-                    <input type="password" id="registerPasswordConfirm" required placeholder="再次输入密码">
+                    <label>Confirm Password</label>
+                    <input type="password" id="registerPasswordConfirm" required placeholder="Re-enter password">
                 </div>
                 
-                <button type="submit" class="submit-btn" id="registerBtn">注册</button>
+                <button type="submit" class="submit-btn" id="registerBtn">Register</button>
                 <div id="registerMessage"></div>
             </form>
         </div>

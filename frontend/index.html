@@ -1,134 +1,173 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>赛场瞬间 - 比赛列表</title>
+    <title>Sports Moments - Match List</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="container">
-        <!-- 头部 -->
-        <header class="header">
-            <div class="header-content">
-                <h1>🏀 赛场瞬间</h1>
-                <p class="subtitle">经济学院篮球队战术分析平台</p>
+        <!-- Hero Carousel -->
+        <div class="hero-carousel">
+            <div class="carousel-container">
+                <div class="carousel-slides" id="carouselSlides">
+                    <div class="carousel-slide active">
+                        <div class="slide-content">
+                            <div class="slide-text">
+                                <h1 class="slide-title">🏀 Sports Moments</h1>
+                                <p class="slide-subtitle">Basketball Team Tactical Analysis Platform</p>
+                                <p class="slide-description">Record every exciting moment, analyze every game strategy</p>
+                                <button class="btn btn-primary btn-hero" onclick="showUploadModal()">
+                                    📤 Upload New Match
+                                </button>
+                            </div>
+                            <div class="slide-image">
+                                <div class="hero-icon">🏆</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="carousel-slide">
+                        <div class="slide-content">
+                            <div class="slide-text">
+                                <h2 class="slide-title">Tactical Analysis</h2>
+                                <p class="slide-subtitle">Professional Tactical Annotation System</p>
+                                <p class="slide-description">Use drawing tools to annotate tactics and record every play</p>
+                            </div>
+                            <div class="slide-image">
+                                <div class="hero-icon">📋</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="carousel-slide">
+                        <div class="slide-content">
+                            <div class="slide-text">
+                                <h2 class="slide-title">Team Collaboration</h2>
+                                <p class="slide-subtitle">Bridge Between Coaches and Players</p>
+                                <p class="slide-description">Comment, interact, share tactical insights, grow together</p>
+                            </div>
+                            <div class="slide-image">
+                                <div class="hero-icon">💬</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <button class="carousel-btn prev" onclick="prevSlide()">❮</button>
+                <button class="carousel-btn next" onclick="nextSlide()">❯</button>
+                <div class="carousel-dots" id="carouselDots"></div>
             </div>
-            <div class="header-actions">
-                <div id="userInfo" style="margin-right: 15px;"></div>
-                <button class="btn btn-primary" onclick="showUploadModal()">
-                    📤 上传新比赛
-                </button>
-            </div>
-        </header>
+        </div>
 
-        <!-- 搜索和筛选 -->
+        <!-- User Info Bar -->
+        <div class="user-bar">
+            <div id="userInfo"></div>
+        </div>
+
+        <!-- Search and Filter -->
         <div class="filter-bar">
             <div class="search-box">
-                <input type="text" id="searchInput" placeholder="🔍 搜索比赛..." onkeyup="filterMatches()">
+                <input type="text" id="searchInput" placeholder="🔍 Search matches..." onkeyup="filterMatches()">
             </div>
             <div class="filter-tags">
-                <span class="filter-label">快速筛选:</span>
-                <button class="tag-btn" onclick="filterByTag('all')">全部</button>
-                <button class="tag-btn" onclick="filterByTag('胜利')">胜利</button>
-                <button class="tag-btn" onclick="filterByTag('失利')">失利</button>
-                <button class="tag-btn" onclick="filterByTag('主场')">主场</button>
-                <button class="tag-btn" onclick="filterByTag('客场')">客场</button>
+                <span class="filter-label">Quick Filter:</span>
+                <button class="tag-btn" onclick="filterByTag('all')">All</button>
+                <button class="tag-btn" onclick="filterByTag('Win')">Win</button>
+                <button class="tag-btn" onclick="filterByTag('Loss')">Loss</button>
+                <button class="tag-btn" onclick="filterByTag('Home')">Home</button>
+                <button class="tag-btn" onclick="filterByTag('Away')">Away</button>
             </div>
         </div>
 
-        <!-- 统计信息 -->
+        <!-- Statistics -->
         <div class="stats-bar">
             <div class="stat-item">
+                <div class="stat-icon">📊</div>
                 <span class="stat-number" id="totalMatches">0</span>
-                <span class="stat-label">场比赛</span>
+                <span class="stat-label">Matches</span>
             </div>
             <div class="stat-item">
+                <div class="stat-icon">🏆</div>
                 <span class="stat-number" id="winRate">0%</span>
-                <span class="stat-label">胜率</span>
-            </div>
-            <div class="stat-item">
-                <span class="stat-number" id="totalStorage">0 GB</span>
-                <span class="stat-label">已使用</span>
+                <span class="stat-label">Win Rate</span>
             </div>
         </div>
 
-        <!-- 比赛列表 -->
+        <!-- Match List -->
         <div id="matchList" class="match-grid">
-            <div class="loading">加载中...</div>
+            <div class="loading">Loading...</div>
         </div>
     </div>
 
-    <!-- 上传比赛模态框 -->
+    <!-- Upload Match Modal -->
     <div id="uploadModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>📤 上传新比赛</h2>
+                <h2>📤 Upload New Match</h2>
                 <span class="close" onclick="closeUploadModal()">&times;</span>
             </div>
             <form id="uploadForm" class="upload-form">
                 <div class="form-row">
                     <div class="form-group">
-                        <label>比赛名称 *</label>
-                        <input type="text" id="matchTitle" required placeholder="例如: 友谊赛 vs 计算机学院">
+                        <label>Match Title *</label>
+                        <input type="text" id="matchTitle" required placeholder="e.g., Friendly vs CS Team">
                     </div>
                     <div class="form-group">
-                        <label>对手队伍 *</label>
-                        <input type="text" id="opponent" required placeholder="例如: 计算机学院篮球队">
+                        <label>Opponent Team *</label>
+                        <input type="text" id="opponent" required placeholder="e.g., Computer Science Basketball">
                     </div>
                 </div>
 
                 <div class="form-row">
                     <div class="form-group">
-                        <label>比赛日期 *</label>
+                        <label>Match Date *</label>
                         <input type="date" id="matchDate" required>
                     </div>
                     <div class="form-group">
-                        <label>比赛时间</label>
+                        <label>Match Time</label>
                         <input type="time" id="matchTime" value="14:00">
                     </div>
                 </div>
 
                 <div class="form-group">
-                    <label>比赛地点</label>
-                    <input type="text" id="location" placeholder="例如: 学校体育馆">
+                    <label>Location</label>
+                    <input type="text" id="location" placeholder="e.g., School Gym">
                 </div>
 
                 <div class="form-row">
                     <div class="form-group">
-                        <label>我方得分</label>
+                        <label>Our Score</label>
                         <input type="number" id="ourScore" min="0" placeholder="78">
                     </div>
                     <div class="form-group">
-                        <label>对方得分</label>
+                        <label>Opponent Score</label>
                         <input type="number" id="opponentScore" min="0" placeholder="72">
                     </div>
                 </div>
 
                 <div class="form-group">
-                    <label>比赛结果</label>
+                    <label>Match Result</label>
                     <div class="radio-group">
                         <label class="radio-label">
                             <input type="radio" name="outcome" value="win" checked>
-                            <span>胜利 🏆</span>
+                            <span>Win 🏆</span>
                         </label>
                         <label class="radio-label">
                             <input type="radio" name="outcome" value="draw">
-                            <span>平局 🤝</span>
+                            <span>Draw 🤝</span>
                         </label>
                         <label class="radio-label">
                             <input type="radio" name="outcome" value="loss">
-                            <span>失利 😔</span>
+                            <span>Loss 😔</span>
                         </label>
                     </div>
                 </div>
 
                 <div class="form-group">
-                    <label>视频文件 * (建议小于100MB)</label>
+                    <label>Video File * (Max 100MB recommended)</label>
                     <div class="file-input-wrapper">
                         <input type="file" id="videoFile" accept="video/*" required onchange="handleVideoSelect(this)">
                         <div class="file-input-display" id="videoFileDisplay">
-                            <span>📹 点击选择视频文件或拖拽到此处</span>
+                            <span>📹 Click to select or drag video file here</span>
                         </div>
                     </div>
                     <div id="videoPreview" class="video-preview" style="display:none;">
@@ -137,11 +176,11 @@
                 </div>
 
                 <div class="form-group">
-                    <label>缩略图 (可选)</label>
+                    <label>Thumbnail (Optional)</label>
                     <div class="file-input-wrapper">
                         <input type="file" id="thumbnailFile" accept="image/*" onchange="handleThumbnailSelect(this)">
                         <div class="file-input-display" id="thumbnailFileDisplay">
-                            <span>🖼️ 点击选择缩略图</span>
+                            <span>🖼️ Click to select thumbnail</span>
                         </div>
                     </div>
                     <div id="thumbnailPreview" class="thumbnail-preview" style="display:none;">
@@ -150,15 +189,15 @@
                 </div>
 
                 <div class="form-group">
-                    <label>标签 (逗号分隔)</label>
-                    <input type="text" id="tags" placeholder="例如: 主场, 胜利, 季后赛">
+                    <label>Tags (Comma separated)</label>
+                    <input type="text" id="tags" placeholder="e.g., Home, Win, Playoffs">
                     <div class="tag-suggestions">
-                        <button type="button" class="tag-suggestion" onclick="addTag('主场')">主场</button>
-                        <button type="button" class="tag-suggestion" onclick="addTag('客场')">客场</button>
-                        <button type="button" class="tag-suggestion" onclick="addTag('胜利')">胜利</button>
-                        <button type="button" class="tag-suggestion" onclick="addTag('失利')">失利</button>
-                        <button type="button" class="tag-suggestion" onclick="addTag('季后赛')">季后赛</button>
-                        <button type="button" class="tag-suggestion" onclick="addTag('友谊赛')">友谊赛</button>
+                        <button type="button" class="tag-suggestion" onclick="addTag('Home')">Home</button>
+                        <button type="button" class="tag-suggestion" onclick="addTag('Away')">Away</button>
+                        <button type="button" class="tag-suggestion" onclick="addTag('Win')">Win</button>
+                        <button type="button" class="tag-suggestion" onclick="addTag('Loss')">Loss</button>
+                        <button type="button" class="tag-suggestion" onclick="addTag('Playoffs')">Playoffs</button>
+                        <button type="button" class="tag-suggestion" onclick="addTag('Friendly')">Friendly</button>
                     </div>
                 </div>
 
@@ -166,12 +205,12 @@
                     <div class="progress-bar">
                         <div class="progress-fill" id="progressFill"></div>
                     </div>
-                    <div class="progress-text" id="progressText">上传中... 0%</div>
+                    <div class="progress-text" id="progressText">Uploading... 0%</div>
                 </div>
 
                 <div class="form-actions">
-                    <button type="button" class="btn btn-secondary" onclick="closeUploadModal()">取消</button>
-                    <button type="submit" class="btn btn-primary" id="uploadBtn">📤 上传比赛</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeUploadModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="uploadBtn">📤 Upload Match</button>
                 </div>
             </form>
         </div>

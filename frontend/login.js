@@ -1,16 +1,16 @@
 // ========================================
-// 赛场瞬间 - 登录/注册脚本
+// Sports Moments - Login/Register Script
 // ========================================
 
-// 切换标签
+// Switch Tab
 function switchTab(tab) {
-    // 更新标签样式
+    // Update tab style
     document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.classList.remove('active');
     });
     event.target.classList.add('active');
     
-    // 切换表单
+    // Switch form
     document.querySelectorAll('.form-container').forEach(form => {
         form.classList.remove('active');
     });
@@ -21,12 +21,12 @@ function switchTab(tab) {
         document.getElementById('registerForm').classList.add('active');
     }
     
-    // 清空消息
+    // Clear messages
     document.getElementById('loginMessage').innerHTML = '';
     document.getElementById('registerMessage').innerHTML = '';
 }
 
-// 处理登录
+// Handle Login
 async function handleLogin(e) {
     e.preventDefault();
     
@@ -36,16 +36,16 @@ async function handleLogin(e) {
     const loginBtn = document.getElementById('loginBtn');
     
     if (!username || !password) {
-        messageDiv.innerHTML = '<div class="error-message">请填写所有字段</div>';
+        messageDiv.innerHTML = '<div class="error-message">Please fill in all fields</div>';
         return;
     }
     
     loginBtn.disabled = true;
-    loginBtn.textContent = '登录中...';
+    loginBtn.textContent = 'Logging in...';
     messageDiv.innerHTML = '';
     
     try {
-        // 调用后端 API 验证登录
+        // Call backend API to verify login
         const response = await fetch(AZURE_CONFIG.apiEndpoints.loginUser, {
             method: 'POST',
             headers: {
@@ -53,14 +53,14 @@ async function handleLogin(e) {
             },
             body: JSON.stringify({
                 username: username,
-                password: btoa(password) // Base64 编码密码
+                password: btoa(password) // Base64 encode password
             })
         });
         
         const result = await response.json();
         
         if (result.success && result.user) {
-            // 登录成功，保存会话
+            // Login successful, save session
             const sessionData = {
                 userId: result.user.userId,
                 username: result.user.username,
@@ -73,30 +73,30 @@ async function handleLogin(e) {
             localStorage.setItem('currentUser', JSON.stringify(sessionData));
             localStorage.setItem('isLoggedIn', 'true');
             
-            // 跟踪用户登录（Application Insights）
+            // Track user login (Application Insights)
             if (window.AppInsightsTracking) {
                 window.AppInsightsTracking.trackUserLogin(sessionData.userId, sessionData.username);
             }
             
-            messageDiv.innerHTML = '<div class="success-message">登录成功！正在跳转...</div>';
+            messageDiv.innerHTML = '<div class="success-message">Login successful! Redirecting...</div>';
             
-            // 跳转到首页
+            // Redirect to homepage
             setTimeout(() => {
                 window.location.href = 'index.html';
             }, 1000);
         } else {
-            throw new Error(result.error || '用户名或密码错误');
+            throw new Error(result.error || 'Incorrect username or password');
         }
         
     } catch (error) {
-        console.error('登录失败:', error);
+        console.error('Login failed:', error);
         messageDiv.innerHTML = `<div class="error-message">${error.message}</div>`;
         loginBtn.disabled = false;
-        loginBtn.textContent = '登录';
+        loginBtn.textContent = 'Login';
     }
 }
 
-// 处理注册
+// Handle Register
 async function handleRegister(e) {
     e.preventDefault();
     
@@ -107,33 +107,33 @@ async function handleRegister(e) {
     const messageDiv = document.getElementById('registerMessage');
     const registerBtn = document.getElementById('registerBtn');
     
-    // 验证
+    // Validation
     if (!username || !displayName || !password || !passwordConfirm) {
-        messageDiv.innerHTML = '<div class="error-message">请填写所有字段</div>';
+        messageDiv.innerHTML = '<div class="error-message">Please fill in all fields</div>';
         return;
     }
     
     if (username.length < 3 || username.length > 20) {
-        messageDiv.innerHTML = '<div class="error-message">用户名长度应为3-20个字符</div>';
+        messageDiv.innerHTML = '<div class="error-message">Username should be 3-20 characters</div>';
         return;
     }
     
     if (password.length < 6) {
-        messageDiv.innerHTML = '<div class="error-message">密码至少需要6个字符</div>';
+        messageDiv.innerHTML = '<div class="error-message">Password must be at least 6 characters</div>';
         return;
     }
     
     if (password !== passwordConfirm) {
-        messageDiv.innerHTML = '<div class="error-message">两次输入的密码不一致</div>';
+        messageDiv.innerHTML = '<div class="error-message">Passwords do not match</div>';
         return;
     }
     
     registerBtn.disabled = true;
-    registerBtn.textContent = '注册中...';
+    registerBtn.textContent = 'Registering...';
     messageDiv.innerHTML = '';
     
     try {
-        // 调用后端 API 注册用户
+        // Call backend API to register user
         const response = await fetch(AZURE_CONFIG.apiEndpoints.registerUser, {
             method: 'POST',
             headers: {
@@ -142,40 +142,40 @@ async function handleRegister(e) {
             body: JSON.stringify({
                 username: username,
                 displayName: displayName,
-                password: btoa(password) // Base64 编码密码
+                password: btoa(password) // Base64 encode password
             })
         });
         
         const result = await response.json();
         
         if (result.success) {
-            messageDiv.innerHTML = '<div class="success-message">注册成功！请登录</div>';
+            messageDiv.innerHTML = '<div class="success-message">Registration successful! Please login</div>';
             
-            // 切换到登录标签
+            // Switch to login tab
             setTimeout(() => {
                 document.querySelectorAll('.tab-btn')[0].click();
                 document.getElementById('loginUsername').value = username;
             }, 1500);
         } else {
-            throw new Error(result.error || '注册失败');
+            throw new Error(result.error || 'Registration failed');
         }
         
         registerBtn.disabled = false;
-        registerBtn.textContent = '注册';
+        registerBtn.textContent = 'Register';
         
     } catch (error) {
-        console.error('注册失败:', error);
+        console.error('Registration failed:', error);
         messageDiv.innerHTML = `<div class="error-message">${error.message}</div>`;
         registerBtn.disabled = false;
-        registerBtn.textContent = '注册';
+        registerBtn.textContent = 'Register';
     }
 }
 
-// 页面加载时检查登录状态
+// Check login status on page load
 window.addEventListener('load', () => {
     const isLoggedIn = localStorage.getItem('isLoggedIn');
     if (isLoggedIn === 'true') {
-        // 已登录，跳转到首页
+        // Already logged in, redirect to homepage
         window.location.href = 'index.html';
     }
 });

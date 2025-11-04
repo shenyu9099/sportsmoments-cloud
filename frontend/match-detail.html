@@ -1,181 +1,183 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>比赛详情 - 赛场瞬间</title>
+    <title>Match Detail - Sports Moments</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="container">
-        <!-- 导航 -->
+        <!-- Navigation -->
         <div class="breadcrumb">
-            <a href="index.html">← 返回比赛列表</a>
+            <a href="index.html">← Back to Match List</a>
         </div>
 
-        <!-- 比赛信息卡片 -->
-        <div class="match-header-card">
-            <div class="match-info-section">
-                <h1 id="matchTitle">加载中...</h1>
-                <div class="match-meta">
+        <!-- Match Detail Header -->
+        <div class="match-detail-header">
+            <div class="match-title-section">
+                <h1 id="matchTitle">Loading...</h1>
+                <div class="match-meta-info">
                     <span id="matchDate">📅 2025-11-15</span>
-                    <span id="matchLocation">📍 体育馆</span>
-                    <span id="matchResult" class="badge badge-win">胜利 78:72</span>
+                    <span class="divider">•</span>
+                    <span id="matchLocation">📍 Gym</span>
+                    <span class="divider">•</span>
+                    <span id="matchResult" class="badge badge-win">Win 78:72</span>
                 </div>
                 <div class="match-tags" id="matchTags"></div>
             </div>
             <div class="match-actions">
-                <button class="btn btn-secondary" onclick="editMatch()">✏️ 编辑</button>
-                <button class="btn btn-danger" onclick="deleteMatch()">🗑️ 删除</button>
+                <button class="btn btn-secondary" onclick="editMatch()">✏️ Edit</button>
+                <button class="btn btn-danger" onclick="deleteMatch()">🗑️ Delete</button>
             </div>
         </div>
 
-        <!-- 视频播放器 -->
+        <!-- Video Player -->
         <div class="video-section">
             <div class="video-player-wrapper">
                 <video id="matchVideo" controls controlsList="nodownload" preload="metadata">
                     <source id="videoSource" src="" type="video/mp4">
-                    您的浏览器不支持视频播放
+                    Your browser does not support video playback
                 </video>
             </div>
         </div>
 
-        <!-- 战术标注列表 -->
+        <!-- Tactical Annotations -->
         <div class="annotations-section">
             <div class="section-header">
-                <h2>📋 战术标注</h2>
-                <button class="btn btn-primary" onclick="showAnnotationModal()">+ 添加战术标注</button>
+                <h2>📋 Tactical Annotations</h2>
+                <button class="btn btn-primary" onclick="showAnnotationModal()">+ Add Annotation</button>
             </div>
             <div id="annotationList" class="annotation-list">
-                <!-- 动态加载 -->
+                <!-- Dynamically loaded -->
             </div>
         </div>
 
-        <!-- 讨论区 -->
+        <!-- Discussion -->
         <div class="comments-section">
-            <h2>💬 讨论区</h2>
+            <h2>💬 Discussion</h2>
             <div class="comment-input-wrapper">
-                <textarea id="commentInput" placeholder="分享你的看法..."></textarea>
-                <button class="btn btn-primary" onclick="addComment()">发表评论</button>
+                <textarea id="commentInput" placeholder="Share your thoughts..."></textarea>
+                <button class="btn btn-primary" onclick="addComment()">Post Comment</button>
             </div>
             <div id="commentList" class="comment-list">
-                <!-- 动态加载 -->
+                <!-- Dynamically loaded -->
             </div>
         </div>
     </div>
 
-    <!-- 编辑比赛模态框 -->
+    <!-- Edit Match Modal -->
     <div id="editModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>✏️ 编辑比赛信息</h2>
+                <h2>✏️ Edit Match Information</h2>
                 <span class="close" onclick="closeEditModal()">&times;</span>
             </div>
             <form id="editForm" onsubmit="handleEditSubmit(event)">
                 <div class="form-group">
-                    <label>比赛名称 *</label>
+                    <label>Match Title *</label>
                     <input type="text" id="editMatchTitle" required>
                 </div>
                 
                 <div class="form-row">
                     <div class="form-group">
-                        <label>比赛日期 *</label>
+                        <label>Match Date *</label>
                         <input type="date" id="editMatchDate" required>
                     </div>
                     <div class="form-group">
-                        <label>比赛时间 *</label>
+                        <label>Match Time *</label>
                         <input type="time" id="editMatchTime" required>
                     </div>
                 </div>
                 
                 <div class="form-group">
-                    <label>对手队伍 *</label>
+                    <label>Opponent Team *</label>
                     <input type="text" id="editOpponent" required>
                 </div>
                 
                 <div class="form-group">
-                    <label>比赛地点</label>
+                    <label>Location</label>
                     <input type="text" id="editLocation">
                 </div>
                 
                 <div class="form-row">
                     <div class="form-group">
-                        <label>我方得分 *</label>
+                        <label>Our Score *</label>
                         <input type="number" id="editOurScore" required min="0">
                     </div>
                     <div class="form-group">
-                        <label>对方得分 *</label>
+                        <label>Opponent Score *</label>
                         <input type="number" id="editOpponentScore" required min="0">
                     </div>
                 </div>
                 
                 <div class="form-group">
-                    <label>比赛结果</label>
+                    <label>Match Result</label>
                     <div class="radio-group">
-                        <label><input type="radio" name="editOutcome" value="win" checked> 胜利 🏆</label>
-                        <label><input type="radio" name="editOutcome" value="draw"> 平局 🤝</label>
-                        <label><input type="radio" name="editOutcome" value="loss"> 失利 😔</label>
+                        <label><input type="radio" name="editOutcome" value="win" checked> Win 🏆</label>
+                        <label><input type="radio" name="editOutcome" value="draw"> Draw 🤝</label>
+                        <label><input type="radio" name="editOutcome" value="loss"> Loss 😔</label>
                     </div>
                 </div>
                 
                 <div class="form-group">
-                    <label>标签</label>
-                    <input type="text" id="editTags" placeholder="用逗号分隔，例如：主场, 胜利, 季后赛">
+                    <label>Tags</label>
+                    <input type="text" id="editTags" placeholder="Comma separated, e.g., Home, Win, Playoffs">
                 </div>
                 
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" onclick="closeEditModal()">取消</button>
-                    <button type="submit" class="btn btn-primary" id="editBtn">保存修改</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeEditModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="editBtn">Save Changes</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- 战术标注模态框 -->
+    <!-- Tactical Annotation Modal -->
     <div id="annotationModal" class="modal">
         <div class="modal-content modal-large">
             <div class="modal-header">
-                <h2>📋 创建战术标注</h2>
+                <h2>📋 Create Tactical Annotation</h2>
                 <span class="close" onclick="closeAnnotationModal()">&times;</span>
             </div>
             <div class="annotation-editor">
                 <div class="editor-left">
                     <div class="form-group">
-                        <label>标注标题 *</label>
-                        <input type="text" id="annotationTitle" placeholder="例如: 快攻战术-第3节">
+                        <label>Annotation Title *</label>
+                        <input type="text" id="annotationTitle" placeholder="e.g., Fast Break - Q3">
                     </div>
                     <div class="form-group">
-                        <label>时间点</label>
-                        <input type="text" id="annotationTimestamp" readonly placeholder="将自动设置为当前播放时间">
+                        <label>Timestamp</label>
+                        <input type="text" id="annotationTimestamp" readonly placeholder="Auto set to current playback time">
                     </div>
                     <div class="form-group">
-                        <label>战术描述</label>
-                        <textarea id="annotationDescription" rows="4" placeholder="描述这个战术的执行过程..."></textarea>
+                        <label>Tactical Description</label>
+                        <textarea id="annotationDescription" rows="4" placeholder="Describe the tactical execution..."></textarea>
                     </div>
                     <div class="form-group">
-                        <label>标签</label>
-                        <input type="text" id="annotationTags" placeholder="例如: 快攻, 成功, 防守转换">
+                        <label>Tags</label>
+                        <input type="text" id="annotationTags" placeholder="e.g., Fast Break, Success, Transition">
                     </div>
                 </div>
                 <div class="editor-right">
                     <div class="canvas-wrapper">
-                        <label>战术图绘制</label>
+                        <label>Tactical Drawing</label>
                         <canvas id="tacticalCanvas" width="600" height="400"></canvas>
                         <div class="canvas-tools">
-                            <button class="tool-btn" onclick="selectTool('arrow')" title="箭头">➡️</button>
-                            <button class="tool-btn" onclick="selectTool('circle')" title="圆圈">⭕</button>
-                            <button class="tool-btn" onclick="selectTool('line')" title="直线">━</button>
-                            <button class="tool-btn" onclick="selectTool('text')" title="文字">A</button>
-                            <input type="color" id="colorPicker" value="#ff0000" title="颜色">
-                            <button class="tool-btn" onclick="clearCanvas()" title="清空">🗑️</button>
-                            <button class="tool-btn" onclick="undoCanvas()" title="撤销">↶</button>
+                            <button class="tool-btn" onclick="selectTool('arrow')" title="Arrow">➡️</button>
+                            <button class="tool-btn" onclick="selectTool('circle')" title="Circle">⭕</button>
+                            <button class="tool-btn" onclick="selectTool('line')" title="Line">━</button>
+                            <button class="tool-btn" onclick="selectTool('text')" title="Text">A</button>
+                            <input type="color" id="colorPicker" value="#ff0000" title="Color">
+                            <button class="tool-btn" onclick="clearCanvas()" title="Clear">🗑️</button>
+                            <button class="tool-btn" onclick="undoCanvas()" title="Undo">↶</button>
                         </div>
                     </div>
                 </div>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="closeAnnotationModal()">取消</button>
-                <button class="btn btn-primary" onclick="saveAnnotation()">保存战术标注</button>
+                <button class="btn btn-secondary" onclick="closeAnnotationModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="saveAnnotation()">Save Annotation</button>
             </div>
         </div>
     </div>

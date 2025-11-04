@@ -1,15 +1,11 @@
-// ========================================
-// Azure配置文件
-// ========================================
-
+ 
 const AZURE_CONFIG = {
-    // 团队信息
+    //  
     teamId: 'basketball-club-001',
-    teamName: '经济学院篮球队',
+    teamName: 'XXX',
     
-    // Azure Storage配置
-    storage: {
-        accountName: 'sports1357', // 你的存储账户名
+     storage: {
+        accountName: 'sports1357',  
         containerNames: {
             videos: 'match-videos',
             thumbnails: 'thumbnails',
@@ -21,20 +17,10 @@ const AZURE_CONFIG = {
         }
     },
     
-    // Cosmos DB配置
-    cosmosDb: {
-        accountName: 'YOUR_COSMOSDB_ACCOUNT_NAME', // 替换为你的Cosmos DB账户名
-        databaseName: 'MediaDB',
-        containers: {
-            matches: 'Matches',
-            annotations: 'TacticAnnotations',
-            comments: 'Comments',
-            teams: 'Teams'
-        }
-    },
+    
     
     // Logic Apps API端点
-    // ⚠️ 重要：创建Logic Apps后，替换为实际的URL
+    
     apiEndpoints: {
         // 用户相关
         registerUser: 'https://prod-05.francecentral.logic.azure.com:443/workflows/d4fec34ecdc947f7bc99666ae3e766ca/triggers/When_an_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_an_HTTP_request_is_received%2Frun&sv=1.0&sig=pGPmns0zOHpOexkvdDP_6g_9E4FrpnSlJiOyDKqJ9uQ',
@@ -50,9 +36,7 @@ const AZURE_CONFIG = {
         // 战术标注相关
         createAnnotation: 'https://prod-02.francecentral.logic.azure.com:443/workflows/5b4e3650cdd34f6fbcf0c7bc5f779b6d/triggers/When_an_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_an_HTTP_request_is_received%2Frun&sv=1.0&sig=73iNRkkxZhPbFRzGqBJds98lmsAwMaZM47jV0TRIe3k',
         getAnnotations: 'https://prod-21.francecentral.logic.azure.com:443/workflows/af3dd20152ad4cf682d6846dfad4f79d/triggers/When_an_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_an_HTTP_request_is_received%2Frun&sv=1.0&sig=HNsIL9asUr5TWFowgO7RphGU8415UOWBviWVsvNdLl8',
-        updateAnnotation: 'https://prod-XX.eastus.logic.azure.com:443/workflows/xxx/triggers/manual/paths/invoke?api-version=xxx',
-        deleteAnnotation: 'https://prod-XX.eastus.logic.azure.com:443/workflows/xxx/triggers/manual/paths/invoke?api-version=xxx',
-        
+         
         // 评论相关
         addComment: 'https://prod-02.francecentral.logic.azure.com:443/workflows/41cb98b85464458fb45532f15c957282/triggers/When_an_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_an_HTTP_request_is_received%2Frun&sv=1.0&sig=Ozz9UT9rvoWLfm8AdzUSyTtRTwTymynXpJDHKWllu8A',
         getComments: 'https://prod-11.francecentral.logic.azure.com:443/workflows/9175f82b0cb24d089b8e881c085f9970/triggers/When_an_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_an_HTTP_request_is_received%2Frun&sv=1.0&sig=Is13dv1lHm8qkcmZR_1XpQHdDj8e1HkZbpPGsgUgCUI',

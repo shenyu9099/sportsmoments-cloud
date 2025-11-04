@@ -1,8 +1,8 @@
 // ========================================
-// 用户认证和权限管理
+// User Authentication and Permission Management
 // ========================================
 
-// 获取当前登录用户
+// Get current logged in user
 function getCurrentUser() {
     const userJson = localStorage.getItem('currentUser');
     if (userJson) {
@@ -11,12 +11,12 @@ function getCurrentUser() {
     return null;
 }
 
-// 检查是否已登录
+// Check if logged in
 function isLoggedIn() {
     return localStorage.getItem('isLoggedIn') === 'true' && getCurrentUser() !== null;
 }
 
-// 要求登录（如果未登录则跳转到登录页）
+// Require login (redirect to login page if not logged in)
 function requireLogin() {
     if (!isLoggedIn()) {
         window.location.href = 'login.html';
@@ -25,26 +25,26 @@ function requireLogin() {
     return true;
 }
 
-// 登出
+// Logout
 function logout() {
-    if (confirm('确定要退出登录吗？')) {
+    if (confirm('Are you sure you want to logout?')) {
         localStorage.removeItem('currentUser');
         localStorage.removeItem('isLoggedIn');
         window.location.href = 'login.html';
     }
 }
 
-// 检查用户是否有权限编辑/删除内容
+// Check if user has permission to edit/delete content
 function canEdit(uploadedBy) {
     const currentUser = getCurrentUser();
     if (!currentUser) return false;
     
-    // 检查是否是内容的上传者
+    // Check if user is the uploader
     return currentUser.userId === uploadedBy || 
            currentUser.username === uploadedBy;
 }
 
-// 更新 AZURE_CONFIG 中的用户信息
+// Update AZURE_CONFIG with current user info
 function updateConfigWithCurrentUser() {
     const user = getCurrentUser();
     if (user && typeof AZURE_CONFIG !== 'undefined') {
@@ -56,29 +56,29 @@ function updateConfigWithCurrentUser() {
     }
 }
 
-// 显示用户信息
+// Display user info
 function displayUserInfo() {
     const user = getCurrentUser();
     if (!user) return;
     
-    // 查找用户信息显示区域
+    // Find user info display area
     const userInfoElement = document.getElementById('userInfo');
     if (userInfoElement) {
         userInfoElement.innerHTML = `
             <span class="user-greeting">
                 👤 ${user.displayName}
             </span>
-            <button class="btn btn-secondary btn-sm" onclick="logout()">退出</button>
+            <button class="btn btn-secondary btn-sm" onclick="logout()">Logout</button>
         `;
     }
 }
 
-// 页面加载时初始化
+// Initialize on page load
 window.addEventListener('load', () => {
-    // 更新配置
+    // Update config
     updateConfigWithCurrentUser();
     
-    // 显示用户信息
+    // Display user info
     displayUserInfo();
 });
 
