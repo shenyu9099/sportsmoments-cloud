@@ -1,4 +1,4 @@
-# 自动部署到 Azure App Service（静态网站）
+# 自动部署到 Azure App Service（静态网站 - 简化版）
 
 name: Deploy to Azure App Service
 
@@ -16,14 +16,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
       
-      - name: Zip frontend files
-        run: |
-          cd frontend
-          zip -r ../frontend.zip .
-      
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v2
         with:
           app-name: ${{ secrets.AZURE_WEBAPP_NAME }}
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-          package: ./frontend.zip
+          package: ./frontend
