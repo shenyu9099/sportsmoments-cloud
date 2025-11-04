@@ -1,0 +1,84 @@
+{
+    "definition": {
+        "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+        "contentVersion": "1.0.0.0",
+        "triggers": {
+            "When_an_HTTP_request_is_received": {
+                "type": "Request",
+                "kind": "Http",
+                "inputs": {
+                    "method": "PUT",
+                    "schema": {}
+                }
+            }
+        },
+        "actions": {
+            "Update_document": {
+                "runAfter": {},
+                "type": "ApiConnection",
+                "inputs": {
+                    "host": {
+                        "connection": {
+                            "name": "@parameters('$connections')['documentdb']['connectionId']"
+                        }
+                    },
+                    "method": "patch",
+                    "body": {
+                        "matchTitle": "@{triggerBody()?['matchTitle']}",
+                        "matchDate": "@{triggerBody()?['matchDate']}",
+                        "opponent": "@{triggerBody()?['opponent']}",
+                        "location": "@{triggerBody()?['location']}",
+                        "result": "@{triggerBody()?['result']}",
+                        "tags": "@{triggerBody()?['tags']}"
+                    },
+                    "path": "/v2/cosmosdb/@{encodeURIComponent('sprot-113992')}/dbs/@{encodeURIComponent('MediaDB')}/colls/@{encodeURIComponent('Matches')}/docs/@{encodeURIComponent(triggerBody()?['id'])}",
+                    "headers": {
+                        "x-ms-documentdb-partitionkey": "@{triggerBody()?['teamId']}"
+                    }
+                }
+            },
+            "Response": {
+                "runAfter": {
+                    "Update_document": [
+                        "Succeeded"
+                    ]
+                },
+                "type": "Response",
+                "kind": "Http",
+                "inputs": {
+                    "statusCode": 200,
+                    "headers": {
+                        "Content-Type": "application/json",
+                        "Access-Control-Allow-Origin": "*",
+                        "Access-Control-Allow-Methods": "PUT, OPTIONS",
+                        "Access-Control-Allow-Headers": "Content-Type"
+                    },
+                    "body": {
+                        "success": true,
+                        "message": "Match updated successfully"
+                    }
+                }
+            }
+        },
+        "outputs": {},
+        "parameters": {
+            "$connections": {
+                "type": "Object",
+                "defaultValue": {}
+            }
+        }
+    },
+    "parameters": {
+        "$connections": {
+            "type": "Object",
+            "value": {
+                "documentdb": {
+                    "id": "/subscriptions/24c03302-6462-49e9-996c-ed5accc8d702/providers/Microsoft.Web/locations/francecentral/managedApis/documentdb",
+                    "connectionId": "/subscriptions/24c03302-6462-49e9-996c-ed5accc8d702/resourceGroups/sportsmoments-france-rg/providers/Microsoft.Web/connections/documentdb-1",
+                    "connectionName": "documentdb-1"
+                }
+            }
+        }
+    }
+}
+

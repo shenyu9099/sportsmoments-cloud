@@ -1,0 +1,170 @@
+{
+    "definition": {
+        "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+        "contentVersion": "1.0.0.0",
+        "triggers": {
+            "When_an_HTTP_request_is_received": {
+                "type": "Request",
+                "kind": "Http",
+                "inputs": {
+                    "method": "POST",
+                    "schema": {
+                        "type": "object",
+                        "properties": {
+                            "username": {
+                                "type": "string"
+                            },
+                            "displayName": {
+                                "type": "string"
+                            },
+                            "password": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["username", "displayName", "password"]
+                    }
+                }
+            }
+        },
+        "actions": {
+            "Initialize_userId": {
+                "runAfter": {},
+                "type": "InitializeVariable",
+                "inputs": {
+                    "variables": [
+                        {
+                            "name": "userId",
+                            "type": "string",
+                            "value": "user-@{utcNow('yyyyMMddHHmmssfff')}"
+                        }
+                    ]
+                }
+            },
+            "Check_if_username_exists": {
+                "runAfter": {
+                    "Initialize_userId": [
+                        "Succeeded"
+                    ]
+                },
+                "type": "ApiConnection",
+                "inputs": {
+                    "host": {
+                        "connection": {
+                            "name": "@parameters('$connections')['sql']['connectionId']"
+                        }
+                    },
+                    "method": "get",
+                    "path": "/v2/datasets/@{encodeURIComponent(encodeURIComponent('default'))},@{encodeURIComponent(encodeURIComponent('default'))}/tables/@{encodeURIComponent(encodeURIComponent('[dbo].[Users]'))}/items",
+                    "queries": {
+                        "$filter": "Username eq '@{triggerBody()?['username']}'"
+                    }
+                }
+            },
+            "Condition_check_exists": {
+                "actions": {
+                    "Response_username_exists": {
+                        "runAfter": {},
+                        "type": "Response",
+                        "kind": "Http",
+                        "inputs": {
+                            "statusCode": 400,
+                            "headers": {
+                                "Content-Type": "application/json",
+                                "Access-Control-Allow-Origin": "*",
+                                "Access-Control-Allow-Methods": "POST, OPTIONS",
+                                "Access-Control-Allow-Headers": "Content-Type"
+                            },
+                            "body": {
+                                "success": false,
+                                "error": "Username already exists"
+                            }
+                        }
+                    }
+                },
+                "runAfter": {
+                    "Check_if_username_exists": [
+                        "Succeeded"
+                    ]
+                },
+                "else": {
+                    "actions": {
+                        "Insert_new_user": {
+                            "runAfter": {},
+                            "type": "ApiConnection",
+                            "inputs": {
+                                "host": {
+                                    "connection": {
+                                        "name": "@parameters('$connections')['sql']['connectionId']"
+                                    }
+                                },
+                                "method": "post",
+                                "body": {
+                                    "UserId": "@{variables('userId')}",
+                                    "Username": "@{triggerBody()?['username']}",
+                                    "DisplayName": "@{triggerBody()?['displayName']}",
+                                    "PasswordHash": "@{triggerBody()?['password']}",
+                                    "TeamId": "basketball-club-001"
+                                },
+                                "path": "/v2/datasets/@{encodeURIComponent(encodeURIComponent('default'))},@{encodeURIComponent(encodeURIComponent('default'))}/tables/@{encodeURIComponent(encodeURIComponent('[dbo].[Users]'))}/items"
+                            }
+                        },
+                        "Response_success": {
+                            "runAfter": {
+                                "Insert_new_user": [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type": "Response",
+                            "kind": "Http",
+                            "inputs": {
+                                "statusCode": 200,
+                                "headers": {
+                                    "Content-Type": "application/json",
+                                    "Access-Control-Allow-Origin": "*",
+                                    "Access-Control-Allow-Methods": "POST, OPTIONS",
+                                    "Access-Control-Allow-Headers": "Content-Type"
+                                },
+                                "body": {
+                                    "success": true,
+                                    "userId": "@{variables('userId')}",
+                                    "message": "User registered successfully"
+                                }
+                            }
+                        }
+                    }
+                },
+                "expression": {
+                    "and": [
+                        {
+                            "greater": [
+                                "@length(body('Check_if_username_exists')?['value'])",
+                                0
+                            ]
+                        }
+                    ]
+                },
+                "type": "If"
+            }
+        },
+        "outputs": {},
+        "parameters": {
+            "$connections": {
+                "type": "Object",
+                "defaultValue": {}
+            }
+        }
+    },
+    "parameters": {
+        "$connections": {
+            "type": "Object",
+            "value": {
+                "sql": {
+                    "id": "/subscriptions/24c03302-6462-49e9-996c-ed5accc8d702/providers/Microsoft.Web/locations/francecentral/managedApis/sql",
+                    "connectionId": "/subscriptions/24c03302-6462-49e9-996c-ed5accc8d702/resourceGroups/sportsmoments-france-rg/providers/Microsoft.Web/connections/sql-connection",
+                    "connectionName": "sql-connection"
+                }
+            }
+        }
+    }
+}
+

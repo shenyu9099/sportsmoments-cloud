@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>赛场瞬间 - 比赛列表</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- 头部 -->
+        <header class="header">
+            <div class="header-content">
+                <h1>🏀 赛场瞬间</h1>
+                <p class="subtitle">经济学院篮球队战术分析平台</p>
+            </div>
+            <div class="header-actions">
+                <div id="userInfo" style="margin-right: 15px;"></div>
+                <button class="btn btn-primary" onclick="showUploadModal()">
+                    📤 上传新比赛
+                </button>
+            </div>
+        </header>
+
+        <!-- 搜索和筛选 -->
+        <div class="filter-bar">
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="🔍 搜索比赛..." onkeyup="filterMatches()">
+            </div>
+            <div class="filter-tags">
+                <span class="filter-label">快速筛选:</span>
+                <button class="tag-btn" onclick="filterByTag('all')">全部</button>
+                <button class="tag-btn" onclick="filterByTag('胜利')">胜利</button>
+                <button class="tag-btn" onclick="filterByTag('失利')">失利</button>
+                <button class="tag-btn" onclick="filterByTag('主场')">主场</button>
+                <button class="tag-btn" onclick="filterByTag('客场')">客场</button>
+            </div>
+        </div>
+
+        <!-- 统计信息 -->
+        <div class="stats-bar">
+            <div class="stat-item">
+                <span class="stat-number" id="totalMatches">0</span>
+                <span class="stat-label">场比赛</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number" id="winRate">0%</span>
+                <span class="stat-label">胜率</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number" id="totalStorage">0 GB</span>
+                <span class="stat-label">已使用</span>
+            </div>
+        </div>
+
+        <!-- 比赛列表 -->
+        <div id="matchList" class="match-grid">
+            <div class="loading">加载中...</div>
+        </div>
+    </div>
+
+    <!-- 上传比赛模态框 -->
+    <div id="uploadModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📤 上传新比赛</h2>
+                <span class="close" onclick="closeUploadModal()">&times;</span>
+            </div>
+            <form id="uploadForm" class="upload-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>比赛名称 *</label>
+                        <input type="text" id="matchTitle" required placeholder="例如: 友谊赛 vs 计算机学院">
+                    </div>
+                    <div class="form-group">
+                        <label>对手队伍 *</label>
+                        <input type="text" id="opponent" required placeholder="例如: 计算机学院篮球队">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>比赛日期 *</label>
+                        <input type="date" id="matchDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label>比赛时间</label>
+                        <input type="time" id="matchTime" value="14:00">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>比赛地点</label>
+                    <input type="text" id="location" placeholder="例如: 学校体育馆">
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>我方得分</label>
+                        <input type="number" id="ourScore" min="0" placeholder="78">
+                    </div>
+                    <div class="form-group">
+                        <label>对方得分</label>
+                        <input type="number" id="opponentScore" min="0" placeholder="72">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>比赛结果</label>
+                    <div class="radio-group">
+                        <label class="radio-label">
+                            <input type="radio" name="outcome" value="win" checked>
+                            <span>胜利 🏆</span>
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="outcome" value="draw">
+                            <span>平局 🤝</span>
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="outcome" value="loss">
+                            <span>失利 😔</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>视频文件 * (建议小于100MB)</label>
+                    <div class="file-input-wrapper">
+                        <input type="file" id="videoFile" accept="video/*" required onchange="handleVideoSelect(this)">
+                        <div class="file-input-display" id="videoFileDisplay">
+                            <span>📹 点击选择视频文件或拖拽到此处</span>
+                        </div>
+                    </div>
+                    <div id="videoPreview" class="video-preview" style="display:none;">
+                        <video id="previewVideo" controls style="max-width: 100%; max-height: 200px;"></video>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>缩略图 (可选)</label>
+                    <div class="file-input-wrapper">
+                        <input type="file" id="thumbnailFile" accept="image/*" onchange="handleThumbnailSelect(this)">
+                        <div class="file-input-display" id="thumbnailFileDisplay">
+                            <span>🖼️ 点击选择缩略图</span>
+                        </div>
+                    </div>
+                    <div id="thumbnailPreview" class="thumbnail-preview" style="display:none;">
+                        <img id="previewThumbnail" style="max-width: 200px; max-height: 150px;">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>标签 (逗号分隔)</label>
+                    <input type="text" id="tags" placeholder="例如: 主场, 胜利, 季后赛">
+                    <div class="tag-suggestions">
+                        <button type="button" class="tag-suggestion" onclick="addTag('主场')">主场</button>
+                        <button type="button" class="tag-suggestion" onclick="addTag('客场')">客场</button>
+                        <button type="button" class="tag-suggestion" onclick="addTag('胜利')">胜利</button>
+                        <button type="button" class="tag-suggestion" onclick="addTag('失利')">失利</button>
+                        <button type="button" class="tag-suggestion" onclick="addTag('季后赛')">季后赛</button>
+                        <button type="button" class="tag-suggestion" onclick="addTag('友谊赛')">友谊赛</button>
+                    </div>
+                </div>
+
+                <div id="uploadProgress" class="upload-progress" style="display:none;">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    <div class="progress-text" id="progressText">上传中... 0%</div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeUploadModal()">取消</button>
+                    <button type="submit" class="btn btn-primary" id="uploadBtn">📤 上传比赛</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="config.js"></script>
+    <script src="appinsights.js"></script>
+    <script src="auth.js"></script>
+    <script src="script.js"></script>
+    <script>
+        // 页面加载时检查登录状态
+        if (!requireLogin()) {
+            // 未登录会自动跳转到登录页
+        }
+        
+        // 跟踪页面访问
+        if (window.AppInsightsTracking) {
+            window.AppInsightsTracking.trackPagePerformance('MatchList');
+        }
+    </script>
+</body>
+</html>
+

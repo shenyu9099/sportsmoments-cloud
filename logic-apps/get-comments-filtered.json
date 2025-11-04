@@ -1,0 +1,86 @@
+{
+    "definition": {
+        "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+        "contentVersion": "1.0.0.0",
+        "triggers": {
+            "When_an_HTTP_request_is_received": {
+                "type": "Request",
+                "kind": "Http",
+                "inputs": {
+                    "method": "GET",
+                    "schema": {}
+                }
+            }
+        },
+        "actions": {
+            "Query_documents": {
+                "runAfter": {},
+                "type": "ApiConnection",
+                "inputs": {
+                    "host": {
+                        "connection": {
+                            "name": "@parameters('$connections')['documentdb']['connectionId']"
+                        }
+                    },
+                    "method": "get",
+                    "path": "/v2/cosmosdb/@{encodeURIComponent('sprot-113992')}/dbs/@{encodeURIComponent('MediaDB')}/colls/@{encodeURIComponent('Comments')}/docs"
+                }
+            },
+            "Filter_array": {
+                "runAfter": {
+                    "Query_documents": [
+                        "Succeeded"
+                    ]
+                },
+                "type": "Query",
+                "inputs": {
+                    "from": "@body('Query_documents')?['Documents']",
+                    "where": "@equals(item()?['matchId'], triggerOutputs()?['queries']?['matchId'])"
+                }
+            },
+            "Response": {
+                "runAfter": {
+                    "Filter_array": [
+                        "Succeeded"
+                    ]
+                },
+                "type": "Response",
+                "kind": "Http",
+                "inputs": {
+                    "statusCode": 200,
+                    "headers": {
+                        "Content-Type": "application/json",
+                        "Access-Control-Allow-Origin": "*",
+                        "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+                        "Access-Control-Allow-Headers": "Content-Type"
+                    },
+                    "body": {
+                        "success": true,
+                        "data": "@body('Filter_array')",
+                        "count": "@length(body('Filter_array'))"
+                    }
+                }
+            }
+        },
+        "outputs": {},
+        "parameters": {
+            "$connections": {
+                "type": "Object",
+                "defaultValue": {}
+            }
+        }
+    },
+    "parameters": {
+        "$connections": {
+            "type": "Object",
+            "value": {
+                "documentdb": {
+                    "id": "/subscriptions/24c03302-6462-49e9-996c-ed5accc8d702/providers/Microsoft.Web/locations/francecentral/managedApis/documentdb",
+                    "connectionId": "/subscriptions/24c03302-6462-49e9-996c-ed5accc8d702/resourceGroups/sportsmoments-france-rg/providers/Microsoft.Web/connections/documentdb-1",
+                    "connectionName": "documentdb-1"
+                }
+            }
+        }
+    }
+}
+

@@ -1,0 +1,103 @@
+{
+    "definition": {
+        "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+        "contentVersion": "1.0.0.0",
+        "triggers": {
+            "When_an_HTTP_request_is_received": {
+                "type": "Request",
+                "kind": "Http",
+                "inputs": {
+                    "method": "POST",
+                    "schema": {}
+                }
+            }
+        },
+        "actions": {
+            "Initialize_commentId": {
+                "runAfter": {},
+                "type": "InitializeVariable",
+                "inputs": {
+                    "variables": [
+                        {
+                            "name": "commentId",
+                            "type": "string",
+                            "value": "@{guid()}"
+                        }
+                    ]
+                }
+            },
+            "Create_or_update_document": {
+                "runAfter": {
+                    "Initialize_commentId": [
+                        "Succeeded"
+                    ]
+                },
+                "type": "ApiConnection",
+                "inputs": {
+                    "host": {
+                        "connection": {
+                            "name": "@parameters('$connections')['documentdb']['connectionId']"
+                        }
+                    },
+                    "method": "post",
+                    "body": {
+                        "id": "@{variables('commentId')}",
+                        "matchId": "@{triggerBody()?['matchId']}",
+                        "userId": "@{triggerBody()?['userId']}",
+                        "userName": "@{triggerBody()?['userName']}",
+                        "content": "@{triggerBody()?['content']}",
+                        "timestamp": "@{triggerBody()?['timestamp']}",
+                        "createdAt": "@{utcNow()}"
+                    },
+                    "path": "/v2/cosmosdb/@{encodeURIComponent('sprot-113992')}/dbs/@{encodeURIComponent('MediaDB')}/colls/@{encodeURIComponent('Comments')}/docs",
+                    "headers": {
+                        "x-ms-documentdb-partitionkey": "@{triggerBody()?['matchId']}"
+                    }
+                }
+            },
+            "Response": {
+                "runAfter": {
+                    "Create_or_update_document": [
+                        "Succeeded"
+                    ]
+                },
+                "type": "Response",
+                "kind": "Http",
+                "inputs": {
+                    "statusCode": 200,
+                    "headers": {
+                        "Content-Type": "application/json",
+                        "Access-Control-Allow-Origin": "*",
+                        "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+                        "Access-Control-Allow-Headers": "Content-Type"
+                    },
+                    "body": {
+                        "success": true,
+                        "message": "Comment added successfully",
+                        "commentId": "@{variables('commentId')}"
+                    }
+                }
+            }
+        },
+        "outputs": {},
+        "parameters": {
+            "$connections": {
+                "type": "Object",
+                "defaultValue": {}
+            }
+        }
+    },
+    "parameters": {
+        "$connections": {
+            "type": "Object",
+            "value": {
+                "documentdb": {
+                    "id": "/subscriptions/24c03302-6462-49e9-996c-ed5accc8d702/providers/Microsoft.Web/locations/francecentral/managedApis/documentdb",
+                    "connectionId": "/subscriptions/24c03302-6462-49e9-996c-ed5accc8d702/resourceGroups/sportsmoments-france-rg/providers/Microsoft.Web/connections/documentdb-1",
+                    "connectionName": "documentdb-1"
+                }
+            }
+        }
+    }
+}
+

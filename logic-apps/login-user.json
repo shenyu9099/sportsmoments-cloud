@@ -1,0 +1,131 @@
+{
+    "definition": {
+        "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+        "contentVersion": "1.0.0.0",
+        "triggers": {
+            "When_an_HTTP_request_is_received": {
+                "type": "Request",
+                "kind": "Http",
+                "inputs": {
+                    "method": "POST",
+                    "schema": {
+                        "type": "object",
+                        "properties": {
+                            "username": {
+                                "type": "string"
+                            },
+                            "password": {
+                                "type": "string"
+                            }
+                        },
+                        "required": ["username", "password"]
+                    }
+                }
+            }
+        },
+        "actions": {
+            "Query_user": {
+                "runAfter": {},
+                "type": "ApiConnection",
+                "inputs": {
+                    "host": {
+                        "connection": {
+                            "name": "@parameters('$connections')['sql']['connectionId']"
+                        }
+                    },
+                    "method": "get",
+                    "path": "/v2/datasets/@{encodeURIComponent(encodeURIComponent('default'))},@{encodeURIComponent(encodeURIComponent('default'))}/tables/@{encodeURIComponent(encodeURIComponent('[dbo].[Users]'))}/items",
+                    "queries": {
+                        "$filter": "Username eq '@{triggerBody()?['username']}' and PasswordHash eq '@{triggerBody()?['password']}'"
+                    }
+                }
+            },
+            "Condition_check_user_found": {
+                "actions": {
+                    "Response_success": {
+                        "runAfter": {},
+                        "type": "Response",
+                        "kind": "Http",
+                        "inputs": {
+                            "statusCode": 200,
+                            "headers": {
+                                "Content-Type": "application/json",
+                                "Access-Control-Allow-Origin": "*",
+                                "Access-Control-Allow-Methods": "POST, OPTIONS",
+                                "Access-Control-Allow-Headers": "Content-Type"
+                            },
+                            "body": {
+                                "success": true,
+                                "user": {
+                                    "userId": "@{body('Query_user')?['value']?[0]?['UserId']}",
+                                    "username": "@{body('Query_user')?['value']?[0]?['Username']}",
+                                    "displayName": "@{body('Query_user')?['value']?[0]?['DisplayName']}",
+                                    "teamId": "@{body('Query_user')?['value']?[0]?['TeamId']}",
+                                    "role": "member"
+                                }
+                            }
+                        }
+                    }
+                },
+                "runAfter": {
+                    "Query_user": [
+                        "Succeeded"
+                    ]
+                },
+                "else": {
+                    "actions": {
+                        "Response_failed": {
+                            "runAfter": {},
+                            "type": "Response",
+                            "kind": "Http",
+                            "inputs": {
+                                "statusCode": 401,
+                                "headers": {
+                                    "Content-Type": "application/json",
+                                    "Access-Control-Allow-Origin": "*",
+                                    "Access-Control-Allow-Methods": "POST, OPTIONS",
+                                    "Access-Control-Allow-Headers": "Content-Type"
+                                },
+                                "body": {
+                                    "success": false,
+                                    "error": "Invalid username or password"
+                                }
+                            }
+                        }
+                    }
+                },
+                "expression": {
+                    "and": [
+                        {
+                            "greater": [
+                                "@length(body('Query_user')?['value'])",
+                                0
+                            ]
+                        }
+                    ]
+                },
+                "type": "If"
+            }
+        },
+        "outputs": {},
+        "parameters": {
+            "$connections": {
+                "type": "Object",
+                "defaultValue": {}
+            }
+        }
+    },
+    "parameters": {
+        "$connections": {
+            "type": "Object",
+            "value": {
+                "sql": {
+                    "id": "/subscriptions/24c03302-6462-49e9-996c-ed5accc8d702/providers/Microsoft.Web/locations/francecentral/managedApis/sql",
+                    "connectionId": "/subscriptions/24c03302-6462-49e9-996c-ed5accc8d702/resourceGroups/sportsmoments-france-rg/providers/Microsoft.Web/connections/sql-connection",
+                    "connectionName": "sql-connection"
+                }
+            }
+        }
+    }
+}
+

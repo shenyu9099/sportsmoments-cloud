@@ -1,0 +1,138 @@
+{
+  "definition": {
+    "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+    "contentVersion": "1.0.0.0",
+    "triggers": {
+      "When_an_HTTP_request_is_received": {
+        "type": "Request",
+        "kind": "Http",
+        "inputs": {
+          "method": "POST",
+          "schema": {}
+        }
+      }
+    },
+    "actions": {
+      "Initialize_annotationId": {
+        "runAfter": {},
+        "type": "InitializeVariable",
+        "inputs": {
+          "variables": [
+            {
+              "name": "annotationId",
+              "type": "string",
+              "value": "@{guid()}"
+            }
+          ]
+        }
+      },
+      "Upload_Tactical_Image": {
+        "runAfter": {
+          "Initialize_annotationId": [
+            "Succeeded"
+          ]
+        },
+        "type": "ApiConnection",
+        "inputs": {
+          "host": {
+            "connection": {
+              "name": "@parameters('$connections')['azureblob']['connectionId']"
+            }
+          },
+          "method": "post",
+          "body": "@base64ToBinary(triggerBody()?['imageContent'])",
+          "headers": {
+            "ReadFileMetadataFromServer": true
+          },
+          "path": "/v2/datasets/@{encodeURIComponent(encodeURIComponent('AccountNameFromSettings'))}/files",
+          "queries": {
+            "folderPath": "/tactics",
+            "name": "@{concat('annotation-', variables('annotationId'), '.png')}",
+            "queryParametersSingleEncoded": true
+          }
+        }
+      },
+      "Create_Annotation_Document": {
+        "runAfter": {
+          "Upload_Tactical_Image": [
+            "Succeeded"
+          ]
+        },
+        "type": "ApiConnection",
+        "inputs": {
+          "host": {
+            "connection": {
+              "name": "@parameters('$connections')['documentdb']['connectionId']"
+            }
+          },
+          "method": "post",
+          "body": {
+            "id": "@{variables('annotationId')}",
+            "matchId": "@{triggerBody()?['matchId']}",
+            "teamId": "@{triggerBody()?['teamId']}",
+            "timestamp": "@{triggerBody()?['timestamp']}",
+            "title": "@{triggerBody()?['title']}",
+            "description": "@{triggerBody()?['description']}",
+            "imageUrl": "@{concat('https://sports1357.blob.core.windows.net', body('Upload_Tactical_Image')?['Path'])}",
+            "tags": "@{triggerBody()?['tags']}",
+            "createdBy": "@{triggerBody()?['createdBy']}",
+            "createdAt": "@{utcNow()}"
+          },
+          "path": "/v2/cosmosdb/@{encodeURIComponent('sprot-113992')}/dbs/@{encodeURIComponent('MediaDB')}/colls/@{encodeURIComponent('TacticAnnotations')}/docs",
+          "headers": {
+            "x-ms-documentdb-partitionkey": "@{triggerBody()?['matchId']}"
+          }
+        }
+      },
+      "Response": {
+        "runAfter": {
+          "Create_Annotation_Document": [
+            "Succeeded"
+          ]
+        },
+        "type": "Response",
+        "kind": "Http",
+        "inputs": {
+          "statusCode": 200,
+          "headers": {
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "POST, OPTIONS",
+            "Access-Control-Allow-Headers": "Content-Type"
+          },
+          "body": {
+            "success": true,
+            "message": "Annotation created successfully",
+            "annotationId": "@{variables('annotationId')}",
+            "imageUrl": "@{concat('https://sports1357.blob.core.windows.net', body('Upload_Tactical_Image')?['Path'])}"
+          }
+        }
+      }
+    },
+    "outputs": {},
+    "parameters": {
+      "$connections": {
+        "type": "Object",
+        "defaultValue": {}
+      }
+    }
+  },
+  "parameters": {
+    "$connections": {
+      "type": "Object",
+      "value": {
+        "azureblob": {
+          "id": "/subscriptions/24c03302-6462-49e9-996c-ed5accc8d702/providers/Microsoft.Web/locations/francecentral/managedApis/azureblob",
+          "connectionId": "/subscriptions/24c03302-6462-49e9-996c-ed5accc8d702/resourceGroups/sportsmoments-france-rg/providers/Microsoft.Web/connections/azureblob",
+          "connectionName": "azureblob"
+        },
+        "documentdb": {
+          "id": "/subscriptions/24c03302-6462-49e9-996c-ed5accc8d702/providers/Microsoft.Web/locations/francecentral/managedApis/documentdb",
+          "connectionId": "/subscriptions/24c03302-6462-49e9-996c-ed5accc8d702/resourceGroups/sportsmoments-france-rg/providers/Microsoft.Web/connections/documentdb-1",
+          "connectionName": "documentdb-1"
+        }
+      }
+    }
+  }
+}
+
