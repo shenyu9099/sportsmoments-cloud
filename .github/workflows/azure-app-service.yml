@@ -25,5 +25,4 @@ jobs:
               --account-name sports1357 \
               --account-key ${{ secrets.AZURE_STORAGE_KEY }} \
               --destination '$web' \
-              --source ./frontend \
-              --overwrite
+              --source ./frontend
